@@ -40,6 +40,43 @@ def solve(target, name)
   sum
 end
 
-answer = solve(1, "FUEL")
-puts answer
+
+# PART2
+t = 1000000000000
+min = 899155 # PROBLEM
+#min = 2210736
+count = (t * 1.0 / min).floor
+puts "TARGET #{count}"
+t -= solve(count, "FUEL")
+@leftovers["ORE"] = t
+
+target = 10000
+while target > 0
+  @original_leftovers = @leftovers.clone
+  @leftovers["ORE"] -= solve(target, "FUEL")
+  if @leftovers["ORE"] >= 0
+    @original_leftovers= @leftovers.clone
+    count += target
+  else
+    target -= 1
+    puts target
+    @leftovers = @original_leftovers
+  end
+  break if @leftovers["ORE"] == 0
+  puts target
+end
+
+#while @leftovers["ORE"] > 0
+#  puts "---- " + @leftovers["ORE"].to_s if count % 100 == 0
+#  @leftovers["ORE"] -= solve(1, "FUEL")
+#  count += 1
+#end
+
+puts count
+
+
+
+# PART 1
+#answer = solve(1, "FUEL")
+#puts answer
 

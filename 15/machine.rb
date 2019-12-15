@@ -165,6 +165,7 @@ class Explorer
       return explorer.run
 
     elsif m.output == 2
+      puts inputs.length
       puts "Start exploring Oxygen..."
       @visited = {@location => 0}
       run_oxygen
@@ -178,7 +179,6 @@ class Explorer
     south = [2, [@location[0] + 1, @location[1]]]
     west = [3, [@location[0], @location[1] - 1]]
     east = [4, [@location[0], @location[1] + 1]]
-    puts @location.inspect
     [north, south, east, west].each do |d|
       explore_oxygen(@location, d.first, d.last) if @visited[d.last].nil?
     end
@@ -190,11 +190,11 @@ class Explorer
     m.run
 
     if m.output == 0
+      stopped(@visited.dup)
       return nil
 
     elsif m.output == 1 || m.output == 2
       @visited[current] = @visited[parent] + 1
-      puts @visited.length
       explorer = Explorer.new(current.dup, @visited.dup, @inputs + [input])
       return explorer.run_oxygen
     else
@@ -203,5 +203,19 @@ class Explorer
   end
 end
 
+$max_length = 0
+$p = []
+
+def stopped(visited)
+  if visited.length > $max_length
+    $max_length = visited.length
+    $p = [visited.dup]
+  elsif visited.length == $max_length
+    $p << visited.dup
+  end
+end
+
 explorer = Explorer.new([0, 0], {}, [])
 explorer.run
+
+puts $p.map(&:values).map{|v| v.max}.min + 1 # ALWAYS +1 ERROR

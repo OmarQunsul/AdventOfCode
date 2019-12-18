@@ -1,4 +1,4 @@
-file = "input2.txt"
+file = "input3.txt"
 @grid = File.read(file).split("\n").map{|line| line.split("") }
 
 location = nil
@@ -9,7 +9,7 @@ location = nil
     if ([cell] & %w[. #]).empty?
       if cell == "@"
         location = [y, x]
-      elsif
+      else
         @locations[cell] = [y, x]
       end
     end
@@ -19,6 +19,7 @@ end
 @grid[location.first][location.last] = "." # No need for "@"
 
 DIRECTIONS = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+SMALL = ('a'..'z').to_a
 
 def outside?(l)
   return true if l.first < 0 || l.last < 0
@@ -44,26 +45,45 @@ def explore(steps, location, grid, locations, visited)
   if small
     big = value.upcase
     door_location = locations[big]
+
     if door_location
       grid[door_location.first][door_location.last] = "."
-      grid[location.first][location.last] = "."
     end
+    grid[location.first][location.last] = "."
+
+    raise "NOT FOUND #{value} in #{locations.inspect}" if locations[value].nil?
+
     locations.delete(value)
     locations.delete(big)
-    if locations.length == 0
+
+    if (locations.keys & SMALL).empty?
       return steps
     end
+
+
     visited = { location => true }
 
     result = []
     DIRECTIONS.each do |d|
       new_location = add(location, d)
-      result << explore(steps + 1, new_location, grid.map(&:clone), locations.clone, visited.dup)
+      result << explore(steps + 1, new_location, grid.map(&:clone), locations.dup, visited.dup)
     end
     result = result.compact
     return result.empty? ? nil : result.min
 
   elsif value == "."
+
+    unvisited_neighbours = neighbours(location).reject{ |u| visited[u] || grid[u.first][u.last] != "." }
+
+    while unvisited_neighbours.length == 1
+      steps += 1
+      visited[location] = true
+      location = unvisited_neighbours.first
+      unvisited_neighbours = neighbours(location).reject{ |u| visited[u] || grid[u.first][u.last] != "." }
+    end
+
+    value = grid[location.first][location.last]
+
     visited[location] = true
     result = []
     DIRECTIONS.each do |d|

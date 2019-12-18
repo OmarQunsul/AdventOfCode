@@ -34,10 +34,10 @@ end
 
 def explore(steps, location, grid, locations, visited)
   return nil if outside?(location)
+  value = grid[location.first][location.last]
   return nil if grid[location.first][location.last] == "#"
   return nil if visited[location]
 
-  value = grid[location.first][location.last]
   return nil if value.match?(/[A-Z]/)
   small = true if value.match?(/[a-z]/)
 
@@ -50,18 +50,15 @@ def explore(steps, location, grid, locations, visited)
     end
     locations.delete(value)
     locations.delete(big)
-    puts locations.keys.inspect
     if locations.length == 0
-      puts "Finished"
       return steps
     end
-    visited = {}
-    visited[location] = true
+    visited = { location => true }
 
     result = []
     DIRECTIONS.each do |d|
       new_location = add(location, d)
-      result << explore(steps + 1, new_location, grid.clone, locations.clone, visited.dup)
+      result << explore(steps + 1, new_location, grid.map(&:clone), locations.clone, visited.dup)
     end
     result = result.compact
     return result.empty? ? nil : result.min
@@ -71,10 +68,9 @@ def explore(steps, location, grid, locations, visited)
     result = []
     DIRECTIONS.each do |d|
       new_location = add(location, d)
-      result << explore(steps + 1, new_location, grid.clone, locations.clone, visited.dup)
+      result << explore(steps + 1, new_location, grid.map(&:clone), locations.clone, visited.dup)
     end
     result = result.compact
-    puts result.inspect unless result.empty?
     return result.empty? ? nil : result.min
   end
 end

@@ -60,7 +60,6 @@ def explore(steps, location, grid, locations, visited)
       return steps
     end
 
-
     visited = { location => true }
 
     result = []

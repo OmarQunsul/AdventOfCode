@@ -1,4 +1,4 @@
-file = "input3.txt"
+file = "input4.txt"
 @grid = File.read(file).split("\n").map{|line| line.split("") }
 
 location = nil
@@ -82,7 +82,7 @@ def explore(steps, location, grid, locations, visited)
 
   elsif value == "."
 
-    unvisited_neighbours = neighbours(location).reject{ |u| visited[u] || grid[u.first][u.last] != "#" }
+    unvisited_neighbours = neighbours(location).reject{ |u| visited[u]}.select{|u| grid[u.first][u.last] != "#" }
 
     while unvisited_neighbours.length == 1 && grid[unvisited_neighbours.first.first][unvisited_neighbours.first.last] == "."
       steps += 1

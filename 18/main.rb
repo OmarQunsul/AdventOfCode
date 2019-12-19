@@ -1,4 +1,4 @@
-file = "input4.txt"
+file = "input3.txt"
 @grid = File.read(file).split("\n").map{|line| line.split("") }
 
 location = nil
@@ -36,7 +36,7 @@ end
 @cache = {}
 
 def explore(steps, location, grid, locations, visited)
-  cache_key = [location.dup, locations.keys.sort.dup]
+  cache_key = [location.dup, locations.keys.join("")]
   if cached_values = @cache[cache_key]
     return (cached_values.first - cached_values.last) + steps
   end

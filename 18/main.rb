@@ -1,4 +1,4 @@
-file = "input3.txt"
+file = "input.txt"
 @grid = File.read(file).split("\n").map{|line| line.split("") }
 
 location = nil

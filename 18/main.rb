@@ -33,7 +33,12 @@ def neighbours(l)
   DIRECTIONS.map{ |d| [l[0] + d.first, l[1] + d.last]}.reject{ |l2| outside?(l2) }
 end
 
+@cache = {}
+
 def explore(steps, location, grid, locations, visited)
+  cache_key = [location.dup, locations.keys.sort.dup, steps]
+  return @cache[cache_key] if @cache[cache_key]
+
   return nil if outside?(location)
   value = grid[location.first][location.last]
   return nil if grid[location.first][location.last] == "#"
@@ -57,6 +62,7 @@ def explore(steps, location, grid, locations, visited)
     locations.delete(big)
 
     if (locations.keys & SMALL).empty?
+      puts steps
       return steps
     end
 
@@ -67,18 +73,20 @@ def explore(steps, location, grid, locations, visited)
       new_location = add(location, d)
       result << explore(steps + 1, new_location, grid.map(&:clone), locations.dup, visited.dup)
     end
-    result = result.compact
-    return result.empty? ? nil : result.min
+
+    result = result.compact.min
+    @cache[cache_key] = result
+    return result
 
   elsif value == "."
 
-    unvisited_neighbours = neighbours(location).reject{ |u| visited[u] || grid[u.first][u.last] != "." }
+    unvisited_neighbours = neighbours(location).reject{ |u| visited[u] || grid[u.first][u.last] != "#" }
 
-    while unvisited_neighbours.length == 1
+    while unvisited_neighbours.length == 1 && grid[unvisited_neighbours.first.first][unvisited_neighbours.first.last] == "1"
       steps += 1
       visited[location] = true
       location = unvisited_neighbours.first
-      unvisited_neighbours = neighbours(location).reject{ |u| visited[u] || grid[u.first][u.last] != "." }
+      unvisited_neighbours = neighbours(location).reject{ |u| visited[u] }.select{ |u| grid[u.first][u.last] != "#" }
     end
 
     value = grid[location.first][location.last]
@@ -87,10 +95,13 @@ def explore(steps, location, grid, locations, visited)
     result = []
     DIRECTIONS.each do |d|
       new_location = add(location, d)
-      result << explore(steps + 1, new_location, grid.map(&:clone), locations.clone, visited.dup)
+      result << explore(steps + 1, new_location, grid.map(&:clone), locations.dup, visited.dup)
     end
-    result = result.compact
-    return result.empty? ? nil : result.min
+
+    result = result.compact.min
+    @cache[[location, @locations.keys.dup]] = result
+    return result
+
   end
 end
 

@@ -36,8 +36,10 @@ end
 @cache = {}
 
 def explore(steps, location, grid, locations, visited)
-  cache_key = [location.dup, locations.keys.sort.dup, steps]
-  return @cache[cache_key] if @cache[cache_key]
+  cache_key = [location.dup, locations.keys.sort.dup]
+  if cached_values = @cache[cache_key]
+    return (cached_values.first - cached_values.last) + steps
+  end
 
   return nil if outside?(location)
   value = grid[location.first][location.last]
@@ -75,14 +77,14 @@ def explore(steps, location, grid, locations, visited)
     end
 
     result = result.compact.min
-    @cache[cache_key] = result
+    @cache[cache_key] = [result, steps]
     return result
 
   elsif value == "."
 
     unvisited_neighbours = neighbours(location).reject{ |u| visited[u] || grid[u.first][u.last] != "#" }
 
-    while unvisited_neighbours.length == 1 && grid[unvisited_neighbours.first.first][unvisited_neighbours.first.last] == "1"
+    while unvisited_neighbours.length == 1 && grid[unvisited_neighbours.first.first][unvisited_neighbours.first.last] == "."
       steps += 1
       visited[location] = true
       location = unvisited_neighbours.first
@@ -99,7 +101,7 @@ def explore(steps, location, grid, locations, visited)
     end
 
     result = result.compact.min
-    @cache[[location, @locations.keys.dup]] = result
+    @cache[[location, @locations.keys.dup]] = [result, steps]
     return result
 
   end

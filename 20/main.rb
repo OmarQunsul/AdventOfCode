@@ -46,11 +46,20 @@ distance = 0
 
 while current.length > 0
   distance += 1
+  
+  puts distance
 
   n = []
   current.each do |node|
     level = node.last
+    puts level
+
+    # NOT DONE YET
+
     # TODO: Here we check the neighours from the locations
+    tunnel = @locations.select{|k, v| v[0..1] == node[0..1] }.first
+    tunnel = nil if tunnel && tunnel.first.start_with?("AA") && level == 0
+    raise tunnel.inspect if tunnel
     #@locations.each do |k, v| 
     #  if v.include?(node)
     #    n += v.reject{|u| u == node }.select{|p| @distances[p].nil? }

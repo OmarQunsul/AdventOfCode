@@ -1,4 +1,4 @@
-@grid = File.read("input.txt").split("\n").map{|line| line.split("") }
+@grid = File.read("input4.txt").split("\n").map{|line| line.split("") }
 
 X = @grid.first.length
 Y = @grid.length
@@ -28,22 +28,17 @@ end
       n = (n_values(x, y) & C).first
       d = find(x, y, '.').first
       if d
-        if d.first > x
-          str = "#{value}#{n}"
-        elsif d.first < x
-          str = "#{n}#{value}"
-        elsif d.last > y
-          str = "#{value}#{n}"
-        elsif d.last < y
-          str = "#{n}#{value}"
-        end
-        @locations[str] ||= []; @locations[str] << d
+        outside = (y == 1 || y == (Y - 2) || x == 1 || x == (X - 2))
+        key = "#{n}#{value}"
+        str = (outside ? key : key.reverse) + "-" + (outside ? "outside" : "inside")
+        @locations[str] = d + [outside]
       end
     end
   end
 end
 
-start = @locations["AA"].first
+level = 0
+start = @locations["AA-outside"][0..1] + [0]
 
 @distances = {start => 0}
 current = [start]
@@ -54,21 +49,20 @@ while current.length > 0
 
   n = []
   current.each do |node|
+    level = node.last
     # TODO: Here we check the neighours from the locations
-    @locations.each do |k, v| 
-      if v.include?(node)
-        n += v.reject{|u| u == node }.select{|p| @distances[p].nil? }
-      end
-    end
-    n += find(node.first, node.last, '.').select{|p| @distances[p].nil? }
+    #@locations.each do |k, v| 
+    #  if v.include?(node)
+    #    n += v.reject{|u| u == node }.select{|p| @distances[p].nil? }
+    #  end
+    #end
+    n += find(node.first, node[1], '.').select{|p| @distances[p].nil? }
   end
 
   current = n
   current = current.reject{|p| !@distances[p].nil? }
   current.each{|p| @distances[p] = distance }
 
-  found = @distances[@locations["ZZ"].first]
+  found = @distances[@locations["ZZ-outside"] + [0]]
   raise found.inspect if found
 end
-
-puts @distances[@locations["ZZ"].first]

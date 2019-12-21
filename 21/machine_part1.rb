@@ -125,27 +125,8 @@ class Machine
   end
 end
 
-CHARS = %W[A B C D E F G H I]
-
-def random(number)
-  program = []
-  current = number
-  ind = 1
-  while ind < 6
-    c = CHARS[ind]
-    program << "NOT A J"
-    if current % 2 == 0
-      program << "NOT #{c} T"
-      program << "OR T J"
-    elsif
-      program << "AND #{c} J"
-    end
-    ind += 1
-    current = current / 2
-  end
-  program << "RUN"
-  program.join("\n") + "\n"
-end
+input = File.read("input.txt")
+m = Machine.new(input.split(",").map(&:to_i))
 
 program = <<PROGRAM
 NOT A J
@@ -154,14 +135,15 @@ OR T J
 NOT C T
 OR T J
 AND D J
-AND H J
-RUN
+WALK
 PROGRAM
 
-input = File.read("input.txt")
-m = Machine.new(input.split(",").map(&:to_i))
-inputs = program.gsub("\n\n", "\n").each_byte.to_a
+inputs = program.each_byte.to_a
+
 m.set_inputs(inputs)
 m.run
+
 outputs = m.outputs
 puts outputs.map {|c| c.chr }.join("")
+# It will raise an error with the right answer
+

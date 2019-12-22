@@ -35,76 +35,56 @@ end
 
 @cache = {}
 
-def explore(steps, location, grid, locations, visited)
-  cache_key = [location.dup, locations.keys.join("")]
-  if cached_values = @cache[cache_key]
-    return (cached_values.first - cached_values.last) + steps
+def explore(location, steps, grid, locations)
+  cache_key = [location, locations.keys.sort].inspect
+  return @cache[cache_key] + steps if @cache[cache_key]
+  original_steps = steps
+
+  visited = {location => steps}
+  current = [location]
+
+  characters = {}
+
+  while current.length > 0
+    nodes = []
+    current.each do |node|
+      ns = neighbours(node).reject{|n| visited[n] != nil }.reject{|n| current.include?(n) }
+      ns = ns.select{|n| grid[n.first][n.last] == "."}
+      nodes += ns
+      visited[node] = steps
+
+      ns = neighbours(node).reject{|n| visited[n] != nil }.reject{|n| current.include?(n) }
+      ns = ns.select{|n| grid[n.first][n.last].match(/[a-z]/) }
+      ns.each{|n| characters[grid[n.first][n.last]] ||= steps + 1 }
+    end
+    current = nodes.uniq
+    steps += 1
   end
 
-  return nil if outside?(location)
-  value = grid[location.first][location.last]
-  return nil if grid[location.first][location.last] == "#"
-  return nil if visited[location]
+  #return steps if characters.empty?
 
-  return nil if value.match?(/[A-Z]/)
-  small = true if value.match?(/[a-z]/)
+  results = []
+  characters.each do |k, v|
+    location = locations[k]
+    small = k
+    big = small.upcase
+    location_big = locations[big]
 
-  if small
-    big = value.upcase
-    door_location = locations[big]
+    locations_dup = locations.dup
+    grid_dup = grid.map(&:clone)
+    locations_dup.delete(small)
+    locations_dup.delete(big)
+    return v if (locations_dup.keys & SMALL).empty?
 
-    if door_location
-      grid[door_location.first][door_location.last] = "."
-    end
-    grid[location.first][location.last] = "."
-
-    raise "NOT FOUND #{value} in #{locations.inspect}" if locations[value].nil?
-
-    locations.delete(value)
-    locations.delete(big)
-
-    if (locations.keys & SMALL).empty?
-      puts steps
-      return steps
-    end
-
-    visited = { location => true }
-
-    result = []
-    DIRECTIONS.each do |d|
-      new_location = add(location, d)
-      result << explore(steps + 1, new_location, grid.map(&:clone), locations.dup, visited.dup)
-    end
-
-    result = result.compact.min
-    @cache[cache_key] = [result, steps]
-    return result
-
-  elsif value == "."
-
-    unvisited_neighbours = neighbours(location).reject{ |u| visited[u]}.select{|u| grid[u.first][u.last] != "#" }
-
-    while unvisited_neighbours.length == 1 && grid[unvisited_neighbours.first.first][unvisited_neighbours.first.last] == "."
-      steps += 1
-      visited[location] = true
-      location = unvisited_neighbours.first
-      unvisited_neighbours = neighbours(location).reject{ |u| visited[u] }.select{ |u| grid[u.first][u.last] != "#" }
-    end
-
-    value = grid[location.first][location.last]
-
-    visited[location] = true
-    result = []
-    DIRECTIONS.each do |d|
-      new_location = add(location, d)
-      result << explore(steps + 1, new_location, grid.map(&:clone), locations.dup, visited.dup)
-    end
-
-    result = result.compact.min
-    @cache[[location, @locations.keys.dup]] = [result, steps]
-    return result
-
+    grid_dup[location.first][location.last] = '.'
+    grid_dup[location_big.first][location_big.last] = '.' if location_big
+    results << explore(location.dup, v, grid_dup, locations_dup)
   end
+
+  answer = results.compact.min
+  @cache[cache_key] = answer - original_steps
+  return answer
 end
 
-puts explore(0, location.dup, @grid.clone, @locations.clone, {})
+puts explore(location.dup, 0, @grid.dup, @locations.dup)
+

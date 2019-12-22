@@ -1,6 +1,6 @@
 @lines = File.read("input.txt").split("\n")
 
-N = 10007
+N = 119315717514047
 
 def find(i, level)
   raise "ERROR #{i}" if i < 0 || i >= N
@@ -42,23 +42,20 @@ def find(i, level)
     while (i - start) % n > 0
       start += n - (N % n)
       count += N / n + 1
-      puts start
     end
     count += (i - start) / n
 
     new_count = count
 
+    #current_i = 0
+    #count = 0
+    #while current_i != i
+    #  # SLOW
+    #  current_i = (current_i + n) % N
+    #  count += 1
+    #end
 
-    current_i = 0
-    count = 0
-    while current_i != i
-      # SLOW
-      current_i = (current_i + n) % N
-      count += 1
-    end
-
-    puts [count, new_count].inspect
-
+    #puts [count, new_count].inspect
 
     find(count, level - 1)
 

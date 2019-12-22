@@ -37,13 +37,27 @@ def find(i, level)
 
     n = line.split(" ").last.to_i
 
-    target_i = 0
+    start = 0
     count = 0
-    while target_i != i
+    while (i - start) % n > 0
+      start += n - (N % n)
+      count += N / n + 1
+      puts start
+    end
+    count += (i - start) / n
+
+    new_count = count
+
+
+    current_i = 0
+    count = 0
+    while current_i != i
       # SLOW
-      target_i = (target_i + n) % N
+      current_i = (current_i + n) % N
       count += 1
     end
+
+    puts [count, new_count].inspect
 
 
     find(count, level - 1)

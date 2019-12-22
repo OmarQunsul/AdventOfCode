@@ -1,7 +1,7 @@
 file = "input.txt"
 @grid = File.read(file).split("\n").map{|line| line.split("") }
 
-alocations = nil
+alocations = []
 @locations = {}
 
 @grid.each_with_index do |row, y|
@@ -37,27 +37,33 @@ end
 
 @cache = {}
 
-def explore(location, steps, grid, locations)
-  cache_key = [location, locations.keys.sort].inspect
+def explore(alocations, steps, grid, locations)
+  cache_key = [alocations, locations.keys.sort].inspect
   return @cache[cache_key] + steps if @cache[cache_key]
   original_steps = steps
 
-  visited = {location => steps}
-  current = [location]
+  visited = {}
+  alocations.each do |p|
+    visited[p] = steps
+  end
+
+  current = []
+  alocations.each_with_index{|v, ind| current << [v, ind] }
 
   characters = {}
 
   while current.length > 0
     nodes = []
     current.each do |node|
+      node, parent = node
       ns = neighbours(node).reject{|n| visited[n] != nil }.reject{|n| current.include?(n) }
       ns = ns.select{|n| grid[n.first][n.last] == "."}
-      nodes += ns
+      nodes += ns.map{|n| [n, parent] }
       visited[node] = steps
 
       ns = neighbours(node).reject{|n| visited[n] != nil }.reject{|n| current.include?(n) }
       ns = ns.select{|n| grid[n.first][n.last].match(/[a-z]/) }
-      ns.each{|n| characters[grid[n.first][n.last]] ||= steps + 1 }
+      ns.each{|n| characters[grid[n.first][n.last]] ||= [steps + 1, parent] }
     end
     current = nodes.uniq
     steps += 1
@@ -67,6 +73,8 @@ def explore(location, steps, grid, locations)
 
   results = []
   characters.each do |k, v|
+    v, parent = v
+
     location = locations[k]
     small = k
     big = small.upcase
@@ -78,13 +86,16 @@ def explore(location, steps, grid, locations)
     locations_dup.delete(big)
     return v if (locations_dup.keys & SMALL).empty?
 
+    aa = alocations.dup
+    aa[parent] = location
+
     grid_dup[location.first][location.last] = '.'
     grid_dup[location_big.first][location_big.last] = '.' if location_big
-    results << explore(location.dup, v, grid_dup, locations_dup)
+    results << explore(aa, v, grid_dup, locations_dup)
   end
 
   answer = results.compact.min
-  @cache[cache_key] = answer - original_steps
+  @cache[cache_key] = answer - original_steps if answer != nil
   return answer
 end
 

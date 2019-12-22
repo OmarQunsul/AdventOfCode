@@ -1,14 +1,14 @@
 file = "input.txt"
 @grid = File.read(file).split("\n").map{|line| line.split("") }
 
-location = nil
+alocations = nil
 @locations = {}
 
 @grid.each_with_index do |row, y|
   row.each_with_index do |cell, x|
     if ([cell] & %w[. #]).empty?
       if cell == "@"
-        location = [y, x]
+        alocations << [y, x]
       else
         @locations[cell] = [y, x]
       end
@@ -16,7 +16,9 @@ location = nil
   end
 end
 
-@grid[location.first][location.last] = "." # No need for "@"
+alocations.each do |location|
+  @grid[location.first][location.last] = "." # No need for "@"
+end
 
 DIRECTIONS = [[1, 0], [-1, 0], [0, 1], [0, -1]]
 SMALL = ('a'..'z').to_a
@@ -86,5 +88,5 @@ def explore(location, steps, grid, locations)
   return answer
 end
 
-puts explore(location.dup, 0, @grid.dup, @locations.dup)
+puts explore(alocations.dup, 0, @grid.dup, @locations.dup)
 

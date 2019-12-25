@@ -2,6 +2,8 @@
 
 N = 119315717514047
 
+@visited = {}
+
 def find(i, level)
   raise "ERROR #{i}" if i < 0 || i >= N
 
@@ -46,16 +48,6 @@ def find(i, level)
 
     new_count = count
 
-    #current_i = 0
-    #count = 0
-    #while current_i != i
-    #  # SLOW
-    #  current_i = (current_i + n) % N
-    #  count += 1
-    #end
-
-    #puts [count, new_count].inspect
-
     find(count, level - 1)
 
   else
@@ -69,11 +61,6 @@ i = 0
 while true
   #visited[current] = true
   n = find(current, @lines.length - 1)
-  diff = n - current
-  raise if visited[diff] == true
-  visited[diff] = true
+  raise if n == current
   current = n
-  i += 1
-  puts visited.length if i % 10000 == 0
-  #raise i.inspect if visited[current]
 end

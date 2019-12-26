@@ -134,57 +134,46 @@ end
 DOORS = %w[north west east south]
 @program = File.read("input.txt").split(",").map(&:to_i)
 
-def explore(inputs, inv)
-  return if inputs.length > 50
-  m = Machine.new(@program)
+
+opp = {"west" => "east", "east" => "west", "north" => "south", "south" => "north"}
+
+plan = ["north", "take astronaut ice cream", "south", "west", "take mouse", "north", "take ornament", "west", "north", "take easter egg"]
+plan += ["north", "west", "north", "take wreath", "south", "east", "south"]
+plan += ["east", "take hypercube", "north", "east", "take prime number"]
+#plan += ["west", "south", "west", "south", "west", "take mug", "west", "north"] #, "inv"]
+plan += ["west", "south", "west", "south", "west", "west", "north", "inv"]
+
+while true
+
+  m = Machine.new(@program.dup)
   m.set_inputs([])
   m.run
-  inputs.each do |input|
-    m.outputs = []
-    m.set_inputs(input.each_byte.to_a + [10])
-    m.run
-  end
-  output = m.outputs.map(&:chr).join("")
-  return nil if m.stopped
-  location = output.split("\n").reject(&:empty?).first
-  description = output.split("\n").reject(&:empty?)[1]
-  puts description
-  lines = output.split("\n")
-  options = lines.select{|line| line.start_with?("- ") }.map{|line| line[2..-1] }
+  #puts m.outputs.map(&:chr).join("")
+  commands = plan.dup
 
-  doors = options & DOORS
-  doors = doors.shuffle
-  options = (options - doors)
-  options += inv
-  options = options.shuffle
-
-  doors.each do |door|
-    (0..options.length).each do |i|
-      possibilities = options.combination(i)
-      possibilities.each do |possibility_array|
-        puts possibility_array
-        new_inputs = inputs.dup
-        new_inv = inv.dup
-        (possibility_array).each do |option|
-          if inv.include?(option)
-            new_inputs << "drop #{option}"
-            new_inv = new_inv.reject{|i| i == option }
-          else
-            new_inputs << "take #{option}"
-            new_inv << option
-          end
-        end
-        new_inputs << door
-        explore(new_inputs, new_inv)
-      end
+  location = []
+  while commands.any?
+    #command = $stdin.readline
+    command = commands.shift + "\n"
+    if command.start_with?("take ") && (rand < 0.5)
+      command = commands.shift + "\n"
     end
+    if location.last == opp[command.strip]
+      location.pop
+    else
+      location << command.strip if opp[command.strip]
+    end
+    m.set_inputs(command.each_byte.to_a)
+    m.run
+    output = m.outputs.map(&:chr).join("")
+    #puts output
+    raise output if output.match(/\d{2,}/)
+    #puts output
+    #puts "============="
+    #puts location.inspect
+    #puts "============="
   end
+
+  puts output
+
 end
-
-input = []
-
-explore(input, [])
-
-puts @seen.inspect
-puts @seen.length
-

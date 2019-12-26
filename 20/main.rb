@@ -27,10 +27,13 @@ end
     if value.match(/[A-Z]/)
       n = (n_values(x, y) & C).first
       d = find(x, y, '.').first
+
       if d
+        reverse = (x < d.first) || (y < d.last)
         outside = (y == 1 || y == (Y - 2) || x == 1 || x == (X - 2))
         key = "#{n}#{value}"
-        str = (outside ? key : key.reverse) + "-" + (outside ? "outside" : "inside")
+        key = key.reverse if reverse
+        str = key + "-" + (outside ? "outside" : "inside")
         @locations[str] = d + [outside]
       end
     end
@@ -45,15 +48,17 @@ start = @locations["AA-outside"][0..1] + [0]
 current = [start]
 distance = 0
 
+TARGET = @locations["ZZ-outside"][0..1] + [0]
+
 while current.length > 0
   distance += 1
+  puts distance if distance % 100 == 0
   
   n = []
 
-  puts current.length
-
   current.each do |node|
     level = node.last
+    raise "Wrong Level #{level}" if level < 0
 
     tunnel = @locations.select{|k, v| v[0..1] == node[0..1] }.first
 
@@ -64,21 +69,16 @@ while current.length > 0
 
       if outside && (level < 1)
       else
-        puts tunnel_key
-        puts level
+        opposite = outside ? tunnel_key.gsub("outside", "inside") : tunnel_key.gsub("inside", "outside")
+        other_node = @locations[opposite]
+        #raise "NOT FOUND #{tunnel_key} #{level}" if other_node.nil?
+        if other_node
+          target_level = outside ? level - 1 : level + 1
+          n << (other_node + [target_level]) if target_level > -1
+        end
       end
     end
 
-
-    # TODO: Here we check the neighours from the locations
-    #tunnel = @locations.select{|k, v| v[0..1] == node[0..1] }.first
-    #tunnel = nil if tunnel && tunnel.first.start_with?("AA") && level == 0
-    #raise tunnel.inspect if tunnel
-    #@locations.each do |k, v| 
-    #  if v.include?(node)
-    #    n += v.reject{|u| u == node }.select{|p| @distances[p].nil? }
-    #  end
-    #end
     n += find(node.first, node[1], '.').select{|p| @distances[p].nil? }.map{|node| node += [level] }
   end
 
@@ -86,6 +86,6 @@ while current.length > 0
   current = current.reject{|p| !@distances[p].nil? }
   current.each{|p| @distances[p] = distance }
 
-  found = @distances[@locations["ZZ-outside"] + [0]]
+  found = @distances[TARGET]
   raise found.inspect if found
 end

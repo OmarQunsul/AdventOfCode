@@ -1,4 +1,4 @@
-@grid = File.read("input4.txt").split("\n").map{|line| line.split("") }
+@grid = File.read("input.txt").split("\n").map{|line| line.split("") }
 
 X = @grid.first.length
 Y = @grid.length
@@ -37,6 +37,7 @@ end
   end
 end
 
+
 level = 0
 start = @locations["AA-outside"][0..1] + [0]
 
@@ -47,25 +48,38 @@ distance = 0
 while current.length > 0
   distance += 1
   
-  puts distance
-
   n = []
+
+  puts current.length
+
   current.each do |node|
     level = node.last
-    puts level
 
-    # NOT DONE YET
+    tunnel = @locations.select{|k, v| v[0..1] == node[0..1] }.first
+
+    if tunnel
+      tunnel_key = tunnel.first
+      tunnel_node = tunnel.last
+      outside = tunnel_node.last
+
+      if outside && (level < 1)
+      else
+        puts tunnel_key
+        puts level
+      end
+    end
+
 
     # TODO: Here we check the neighours from the locations
-    tunnel = @locations.select{|k, v| v[0..1] == node[0..1] }.first
-    tunnel = nil if tunnel && tunnel.first.start_with?("AA") && level == 0
-    raise tunnel.inspect if tunnel
+    #tunnel = @locations.select{|k, v| v[0..1] == node[0..1] }.first
+    #tunnel = nil if tunnel && tunnel.first.start_with?("AA") && level == 0
+    #raise tunnel.inspect if tunnel
     #@locations.each do |k, v| 
     #  if v.include?(node)
     #    n += v.reject{|u| u == node }.select{|p| @distances[p].nil? }
     #  end
     #end
-    n += find(node.first, node[1], '.').select{|p| @distances[p].nil? }
+    n += find(node.first, node[1], '.').select{|p| @distances[p].nil? }.map{|node| node += [level] }
   end
 
   current = n
